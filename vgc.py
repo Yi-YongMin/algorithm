@@ -1,24 +1,31 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import cv2
 
-# 임의의 TPR과 FPR 값 생성
-# 5개의 원본 이미지에 대해 4가지 기법으로 업스케일링
-techniques = ["SRCNN", "SRGAN", "Bicubic", "Bilinear"]
-n_images = 5  # 이미지 수
-n_techniques = len(techniques)  # 기술 수
-n_respondents = 100  # 평가자 수
 
-np.random.seed(0)
-tprs = np.random.rand(n_techniques) * 0.5 + 0.5  # TPR: 0.5에서 1.0 사이
-fprs = np.random.rand(n_techniques) * 0.4  # FPR: 0에서 0.4 사이
+def crop_image_bottom(image_path, output_path, target_height):
+    # 이미지 읽기
+    image = cv2.imread(image_path)
+    if image is None:
+        print("Error: Could not read image.")
+        return
 
-# 곡선 그리기
-plt.figure(figsize=(8, 6))
-plt.plot(fprs, tprs, marker="o", linestyle="-", color="b")
-for i, tech in enumerate(techniques):
-    plt.annotate(tech, (fprs[i], tprs[i]))
-plt.title("Simulated VGC Curve")
-plt.xlabel("False Positive Rate (FPR)")
-plt.ylabel("True Positive Rate (TPR)")
-plt.grid(True)
-plt.show()
+    # 이미지 크기 확인
+    height, width = image.shape[:2]
+    print(f"Original size: {width}x{height}")
+
+    # 새로운 높이 설정
+    if height < target_height:
+        print("Error: Target height is greater than the original height.")
+        return
+
+    cropped_image = image[:target_height, :]
+
+    # 이미지 저장
+    cv2.imwrite(output_path, cropped_image)
+    print(f"Image saved to {output_path}")
+
+
+# 예시 사용법
+image_path = "path_to_input_image.jpg"
+output_path = "path_to_output_image.jpg"
+target_height = 288
+crop_image_bottom(image_path, output_path, target_height)

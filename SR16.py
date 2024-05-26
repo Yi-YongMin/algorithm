@@ -1,48 +1,93 @@
-import tkinter as tk
-from PIL import Image, ImageTk
+# import cv2
 
 
-class FixedSizeCropper:
-    def __init__(self, master, path):
-        self.master = master
-        self.path = path
-        self.image = Image.open(self.path)
-        self.render = ImageTk.PhotoImage(self.image)
-        self.canvas = tk.Canvas(
-            master, width=self.render.width(), height=self.render.height()
-        )
-        self.canvas.pack()
-        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.render)
+# def crop_image_bottom(image_path, output_path, target_height):
+#     # 이미지 읽기
+#     image = cv2.imread(image_path)
+#     if image is None:
+#         print("Error: Could not read image.")
+#         return
 
-        # 마우스 이벤트 바인딩
-        self.canvas.bind("<Button-1>", self.on_click)
+#     # 이미지 크기 확인
+#     height, width = image.shape[:2]
+#     print(f"Original size: {width}x{height}")
 
-    def on_click(self, event):
-        # 클릭한 위치를 중심으로 32x32 크기의 이미지를 잘라냄
-        x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
-        left = max(x - 12, 0)
-        top = max(y - 12, 0)
-        right = left + 24
-        bottom = top + 24
+#     # 새로운 높이 설정
+#     if height < target_height:
+#         print("Error: Target height is greater than the original height.")
+#         return
 
-        # 경계 조정 (이미지 경계 넘어가는 것 방지)
-        if right > self.image.width:
-            right = self.image.width
-            left = right - 24
-        if bottom > self.image.height:
-            bottom = self.image.height
-            top = bottom - 24
+#     cropped_image = image[:target_height, :]
 
-        cropped = self.image.crop((left, top, right, bottom))
-        cropped.save("cropped_24x24.png")  # 저장 파일 이름
-        cropped.show()  # 잘라낸 이미지 표시
+#     # 이미지 저장
+#     cv2.imwrite(output_path, cropped_image)
+#     print(f"Image saved to {output_path}")
 
 
-def main():
-    root = tk.Tk()
-    app = FixedSizeCropper(root, "C:\\Set5\\baby.png")  # 이미지 파일 경로
-    root.mainloop()
+# # 예시 사용법
+# image_path = "C:\\Set5\\woman.png"
+# output_path = "C:\\Set5\\edit_woman.png"
+# target_height = 288
+# crop_image_bottom(image_path, output_path, target_height)
+# import cv2
 
 
-if __name__ == "__main__":
-    main()
+# def resize_image(image_path, output_path, target_size=(256, 256)):
+#     # 이미지 읽기
+#     image = cv2.imread(image_path)
+#     if image is None:
+#         print("Error: Could not read image.")
+#         return
+
+#     # 이미지 크기 확인
+#     height, width = image.shape[:2]
+#     print(f"Original size: {width}x{height}")
+
+#     if width != 512 or height != 512:
+#         print("Warning: The original image size is not 512x512.")
+
+#     # 이미지 크기 조정
+#     resized_image = cv2.resize(image, target_size, interpolation=cv2.INTER_LINEAR)
+
+#     # 이미지 저장
+#     cv2.imwrite(output_path, resized_image)
+#     print(f"Resized image saved to {output_path}")
+
+
+# # 예시 사용법
+# image_path = "C:\\Set5\\baby.png"
+# output_path = "C:\\Set5\\edit_baby.png"
+# resize_image(image_path, output_path)
+import cv2
+
+
+def shrink_image(image_path, output_path, scale_factor=16):
+    # 이미지 읽기
+    image = cv2.imread(image_path)
+    if image is None:
+        print("Error: Could not read image.")
+        return
+
+    # 이미지 크기 확인
+    height, width = image.shape[:2]
+    print(f"Original size: {width}x{height}")
+
+    # 새로운 크기 계산
+    new_width = width // scale_factor
+    new_height = height // scale_factor
+    print(f"New size: {new_width}x{new_height}")
+
+    # 이미지 크기 조정
+    resized_image = cv2.resize(
+        image, (new_width, new_height), interpolation=cv2.INTER_LINEAR
+    )
+
+    # 이미지 저장
+    cv2.imwrite(output_path, resized_image)
+    print(f"Resized image saved to {output_path}")
+
+
+# 예시 사용법
+image_path = "C:\\Set5\\edit_woman.png"
+output_path = "C:\\Set5\\edit_woman16.png"
+shrink_image(image_path, output_path)
