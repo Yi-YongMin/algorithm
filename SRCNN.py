@@ -1,218 +1,49 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import h5py
-import tensorflow as tf
-from keras.models import Sequential
-from keras.layers import Conv2D, Input
-from keras import initializers
-from keras.optimizers import Adam
-import random
-
 import cv2
 import os
 from glob import glob
+from skimage.metrics import peak_signal_noise_ratio as psnr
+from skimage.metrics import structural_similarity as ssim
 
-#
-n1, n2, n3 = 128, 64, 3
-f1, f2, f3 = 9, 3, 5
-upscale_factor = 4
-input_size = 33
-output_size = input_size - f1 - f2 - f3 + 3
-pad = abs(input_size - output_size) // 2
-stride = 14
 
-batch_size = 128
-epochs = 200
-path = "/content/drive/MyDrive/T91"
-save_path = "/content/drive/MyDrive/SRCNN_200EPOCHS.h5"
-#
-
-from google.colab import drive
-
-drive.mount("/content/drive")
-
-#
-
-img_paths = glob(path + "/" + "*.png")
-img = cv2.imread(img_paths[0], cv2.COLOR_BGR2RGB)
-print(img.shape)
-plt.imshow(img)
-
-#
-
-sub_lr_imgs = []
-sub_hr_imgs = []
-
-for img_path in img_paths:
-    img = cv2.imread(img_path, cv2.COLOR_BGR2RGB)
-
-    h = img.shape[0] - np.mod(img.shape[0], upscale_factor)
-    w = img.shape[1] - np.mod(img.shape[1], upscale_factor)
-    img = img[:h, :w, :]
-
-    label = img.astype("float") / 255
-    temp_input = cv2.resize(
-        label,
-        dsize=(0, 0),
-        fx=1 / upscale_factor,
-        fy=1 / upscale_factor,
-        interpolation=cv2.INTER_AREA,
-    )
-    input = cv2.resize(
-        temp_input,
-        dsize=(0, 0),
-        fx=upscale_factor,
-        fy=upscale_factor,
-        interpolation=cv2.INTER_CUBIC,
+def calculate_metrics(original_img, compared_img):
+    # PSNR 계산
+    psnr_value = psnr(
+        original_img, compared_img, data_range=compared_img.max() - compared_img.min()
     )
 
-    for h in range(0, input.shape[0] - input_size + 1, stride):
-        for w in range(0, input.shape[1] - input_size + 1, stride):
-            sub_lr_img = input[h : h + input_size, w : w + input_size, :]
-            sub_hr_img = label[
-                h + pad : h + pad + output_size, w + pad : w + pad + output_size, :
-            ]
-            sub_lr_imgs.append(sub_lr_img)
-            sub_hr_imgs.append(sub_hr_img)
-
-sub_lr_imgs = np.asarray(sub_lr_imgs)
-sub_hr_imgs = np.asarray(sub_hr_imgs)
-#
-
-fig, axes = plt.subplots(1, 2, figsize=(5, 5))
-idx = random.randint(0, sub_lr_imgs.shape[0])
-axes[0].imshow(sub_lr_imgs[idx])
-axes[1].imshow(sub_hr_imgs[idx])
-
-print(idx)
-axes[0].set_title("lr_img")
-axes[1].set_title("hr_img")
-#
-
-initializer = initializers.GlorotNormal()
-SRCNN = Sequential()
-SRCNN.add(
-    Conv2D(
-        filters=n1,
-        kernel_size=f1,
-        activation="ReLU",
-        input_shape=(33, 33, 3),
-        kernel_initializer=initializer,
-        bias_initializer="zeros",
-        name="Conv1",
+    # SSIM 계산
+    min_dim = min(
+        original_img.shape[0],
+        original_img.shape[1],
+        compared_img.shape[0],
+        compared_img.shape[1],
     )
-)
-SRCNN.add(
-    Conv2D(
-        filters=n2,
-        kernel_size=f2,
-        activation="ReLU",
-        kernel_initializer=initializer,
-        bias_initializer="zeros",
-        name="Conv2",
+    win_size = min(7, min_dim)  # 이미지 크기에 맞게 win_size 설정, 최소 7 이하
+    ssim_value, _ = ssim(
+        original_img, compared_img, full=True, win_size=win_size, channel_axis=-1
     )
-)
-SRCNN.add(
-    Conv2D(
-        filters=n3,
-        kernel_size=f3,
-        activation="linear",
-        kernel_initializer=initializer,
-        bias_initializer="zeros",
-        name="Conv3",
-    )
-)
-print(SRCNN.summary())
-#
 
-optimizer = Adam(lr=0.0003)
-SRCNN.compile(optimizer=optimizer, loss="MSE", metrics=["MSE"])
-SRCNN.fit(
-    sub_lr_imgs,
-    sub_hr_imgs,
-    batch_size=batch_size,
-    epochs=epochs,
-    verbose=1,
-    callbacks=[callbacks],
-)
-
-#
-
-initializer = initializers.GlorotNormal()
+    return psnr_value, ssim_value
 
 
-def predict_model():
-    SRCNN = Sequential()
-    SRCNN.add(
-        Conv2D(
-            filters=n1,
-            kernel_size=f1,
-            activation="ReLU",
-            input_shape=(None, None, 3),
-            kernel_initializer=initializer,
-            bias_initializer="zeros",
-            name="Conv1",
-        )
-    )
-    SRCNN.add(
-        Conv2D(
-            filters=n2,
-            kernel_size=f2,
-            activation="ReLU",
-            kernel_initializer=initializer,
-            bias_initializer="zeros",
-            name="Conv2",
-        )
-    )
-    SRCNN.add(
-        Conv2D(
-            filters=n3,
-            kernel_size=f3,
-            activation="linear",
-            kernel_initializer=initializer,
-            bias_initializer="zeros",
-            name="Conv3",
-        )
-    )
-    return SRCNN
+# 원본 이미지 경로
+original_img_path = "C:\\int_img\\woman.png"
+original_img = cv2.imread(original_img_path)
 
+# 비교할 이미지들이 있는 디렉토리 경로
+compared_img_dir = "C:\\int_img\\8x\\woman"
+compared_img_paths = glob(os.path.join(compared_img_dir, "*.png"))
 
-SRCNN_Test = predict_model()
-SRCNN_Test.load_weights(save_path)
+# 원본 이미지를 BGR에서 RGB로 변환 (OpenCV는 기본적으로 BGR 형식으로 이미지를 읽어옵니다)
+original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
 
-#
+# 각 비교할 이미지에 대해 PSNR과 SSIM 계산
+results = []
+for img_path in compared_img_paths:
+    compared_img = cv2.imread(img_path)
+    compared_img = cv2.cvtColor(compared_img, cv2.COLOR_BGR2RGB)
 
-hr_img_path = ""
-
-hr_img = cv2.imread(hr_img_path)
-hr_img = cv2.cvtColor(hr_img, cv2.COLOR_BGR2RGB)
-print("img shape: {}".format(hr_img.shape))
-plt.imshow(hr_img)
-
-hr_img = hr_img.astype("float") / 255
-temp_img = cv2.resize(
-    hr_img,
-    dsize=(0, 0),
-    fx=1 / upscale_factor,
-    fy=1 / upscale_factor,
-    interpolation=cv2.INTER_AREA,
-)
-bicubic_img = cv2.resize(
-    temp_img,
-    dsize=(0, 0),
-    fx=upscale_factor,
-    fy=upscale_factor,
-    interpolation=cv2.INTER_CUBIC,
-)
-input_img = bicubic_img[np.newaxis, :]
-srcnn_img = SRCNN_Test.predict(input_img)
-
-#
-
-fig, axes = plt.subplots(1, 3, figsize=(10, 5))
-axes[0].imshow(hr_img)
-axes[1].imshow(bicubic_img)
-axes[2].imshow(np.squeeze(srcnn_img))
-axes[0].set_title("hr_img")
-axes[1].set_title("bicubic_img")
-axes[2].set_title("srcnn_img")
+    psnr_value, ssim_value = calculate_metrics(original_img, compared_img)
+    img_name = os.path.basename(img_path)
+    results.append((img_name, psnr_value, ssim_value))
+    print(f"Processed {img_name}: PSNR = {psnr_value:.8f}, SSIM = {ssim_value:.8f}")
