@@ -6,7 +6,7 @@ from glob import glob
 hr_img_dir = "/content/drive/MyDrive/Set5"
 
 # 16배 축소된 이미지 경로
-lr_img_paths = ["C:\\int_img\\single_pattern_16.jpg"]
+lr_img_paths = ["C:\\int_img\\16x\\alphabet\\alphabet.jpg"]
 
 # 출력될 디렉토리 경로
 bilinear_img_dir = "C:\\algoTest\\bilinear16"
