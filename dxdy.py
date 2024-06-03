@@ -97,8 +97,8 @@ def calculate_psnr_ssim(original, compressed):
 
 
 # Example usage
-original_path = "C:\\Set5\\baby.png"
-compressed_path = "C:\\int_img\\cnn_16\\baby_srcnn16.png"
+original_path = "C:\\int_img\\16x\\color_stripes1.png"
+compressed_path = "C:\\int_img\\16x\\color_stripes\\gan_.png"
 psnr_value, ssim_value = calculate_psnr_ssim(original_path, compressed_path)
 if psnr_value is not None and ssim_value is not None:
     print(f"PSNR: {psnr_value}")
