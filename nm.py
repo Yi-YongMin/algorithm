@@ -50,4 +50,31 @@
 # compressed_path = "C:\\int_img\\4x\\baby\\bc_4x.png"
 # metric = calculate_composite_metric(original_path, compressed_path)
 # print(f"Composite Metric: {metric}")
-a = [[] for I in range(7)]
+def min_cost(length, cuts):
+    # Add the two ends of the log to the cuts array
+    cuts = [0] + sorted(cuts) + [length]
+    n = len(cuts)
+
+    # Initialize a 2D array to store the minimum cost
+    dp = [[0] * n for _ in range(n)]
+
+    # Fill the dp array
+    for length in range(2, n):
+        for i in range(n - length):
+            j = i + length
+            dp[i][j] = float('inf')
+            for k in range(i + 1, j):
+                dp[i][j] = min(dp[i][j], dp[i][k] + dp[k][j] + cuts[j] - cuts[i])
+
+    return dp[0][n - 1]
+
+if __name__ == "__main__":
+    # Read inputs
+    total_length = int(input("Enter the total length of the wood: "))
+    num_cuts = int(input("Enter the number of cuts: "))
+    cuts = list(map(int, input("Enter the positions of cuts: ").split()))
+
+    # Calculate the minimum cost
+    result = min_cost(total_length, cuts)
+    print("Minimum cost to cut the wood:", result)
+
