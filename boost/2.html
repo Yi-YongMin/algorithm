@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boost Marvel 게임</title>
+    <style>
+      .board {
+        font-family: Arial, sans-serif;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px;
+        justify-content: center;
+      }
+      .row {
+        display: flex;
+        width: 300px;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+      .cell {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-board" class="board">
+      <div class="row">
+        <div id="cell12" class="cell"></div>
+        <div id="cell11" class="cell"></div>
+        <div id="cell10" class="cell"></div>
+        <div id="cell9" class="cell"></div>
+        <div id="cell8" class="cell"></div>
+      </div>
+      <div class="row">
+        <div id="cell13" class="cell"></div>
+        <div id="cell7" class="cell"></div>
+      </div>
+      <div class="row">
+        <div id="cell14" class="cell"></div>
+        <div id="cell6" class="cell"></div>
+      </div>
+      <div class="row">
+        <div id="cell15" class="cell"></div>
+        <div id="cell5" class="cell"></div>
+      </div>
+      <div class="row">
+        <div id="cell0" class="cell"></div>
+        <div id="cell1" class="cell"></div>
+        <div id="cell2" class="cell"></div>
+        <div id="cell3" class="cell"></div>
+        <div id="cell4" class="cell"></div>
+      </div>
+    </div>
+    <div id="game-results" class="board">
+      <h2>게임 현황</h2>
+      <div id="current_position">현재 위치</div>
+      <ul>
+        <h2>점수 현황</h2>
+        <li id="playerA">플레이어 A: 0</li>
+        <li id="playerB">플레이어 B: 0</li>
+        <li id="playerC">플레이어 C: 0</li>
+        <li id="playerD">플레이어 D: 0</li>
+      </ul>
+    </div>
+    <script>
+      function play(param0) {
+        const map_size = 16;
+
+        let answer = { A: 0, B: 0, C: 0, D: 0 };
+        let boost_marvel = Array(map_size).fill("");
+        let current_position = [0, 0, 0, 0];
+        let available = map_size - 1;
+
+        const move_board = (move, participant, person) => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              let board_num = (current_position[participant] + move) % map_size;
+              // 시작점이 아닌 땅이 비어 있으면 땅을 소유
+              if (board_num !== 0 && boost_marvel[board_num] === "") {
+                boost_marvel[board_num] = person;
+                answer[person]++;
+                available--;
+              }
+              // 이동한 위치로 갱신
+              current_position[participant] = board_num;
+
+              // 보드와 결과 업데이트
+              displayBoard();
+              displayResults();
+
+              // 게임 종료 조건 확인
+              if (available === 0) {
+                setTimeout(() => {
+                  alert("게임 종료");
+                }, 1000); // 1초 후에 alert 실행
+              }
+              resolve();
+            }, 1000); // 1초 후에 실행
+          });
+        };
+
+        const playMoves = async () => {
+          for (let idx = 0; idx < param0.length; idx++) {
+            let move = param0[idx];
+            let participant = idx % 4;
+            let person = "";
+            switch (participant) {
+              case 0:
+                person = "A";
+                break;
+              case 1:
+                person = "B";
+                break;
+              case 2:
+                person = "C";
+                break;
+              case 3:
+                person = "D";
+                break;
+            }
+            await move_board(move, participant, person);
+          }
+        };
+
+        const displayBoard = () => {
+          const rows = [
+            [12, 11, 10, 9, 8],
+            [13, 7],
+            [14, 6],
+            [15, 5],
+            [0, 1, 2, 3, 4],
+          ];
+
+          rows.forEach((row, rowIndex) => {
+            row.forEach((idx, colIndex) => {
+              const cellId = `cell${idx}`;
+              const cellElement = document.getElementById(cellId);
+              cellElement.textContent = boost_marvel[idx];
+            });
+          });
+        };
+        const name = ["A", "B", "C", "D"];
+        const displayResults = () => {
+          document.getElementById(
+            "playerA"
+          ).textContent = `플레이어 A: ${answer["A"]}`;
+          document.getElementById(
+            "playerB"
+          ).textContent = `플레이어 B: ${answer["B"]}`;
+          document.getElementById(
+            "playerC"
+          ).textContent = `플레이어 C: ${answer["C"]}`;
+          document.getElementById(
+            "playerD"
+          ).textContent = `플레이어 D: ${answer["D"]}`;
+          document.getElementById(
+            "current_position"
+          ).textContent = `현재 위치: ${current_position}`;
+        };
+
+        // 초기 화면 업데이트
+        displayBoard(); // 보드 상태 출력
+        displayResults(); // 결과 출력
+
+        // 게임 시작
+        playMoves();
+      }
+
+      // 예시로 주어진 매개변수를 사용하여 play 함수 실행
+      play([
+        1, 2, 3, 4, 3, 4, 2, 1, 1, 2, 1, 4, 4, 4, 4, 4, 3, 3, 3, 3, 2, 1, 2, 1,
+        4, 4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4,
+      ]);
+    </script>
+  </body>
+</html>

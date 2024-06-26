@@ -25,7 +25,7 @@ function play(param0){
         "C": ans[2],
         "D": ans[3]
     };
-    return JSON.stringify(result, null, 2);
+    return result;
 }
 
 
