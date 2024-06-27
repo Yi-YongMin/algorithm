@@ -1,64 +1,45 @@
-# 실수축제
+# 사다리 게임 만들기
 
-## 자바스크립트의 터미널 입출력
+## 사다리 게임 만들어보고, 이게 공정한 사다리인지 판단하기.
 
-js를 터미널에서 입출력하기 위해서는 node 3.js 라는 명령어를 터미널에 작성해야 한다는 사실을 알았다.  
-게다가 입출력을 받기 위한 코드도 엄청 길다.
+사다리게임에 관련된 지시사항에서 우리가 참고해야할 조건은 아래와 같다.
 
-    const readline = require('readline');
+- 첫번째 , 5명이 5개의 높이의 사다리를 탄다. (사다리 크기 고정)
+- 두번째 , 사다리 데이터에 발판 출력용 문자열을 직접 넣지 않는다.
 
-    // readline 인터페이스 생성
-    const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-    });
+첫번째 조건을 보고 문제가 쉽게 풀릴것이라 예상했으나 두번째 조건을 이해하지 못했다.  
+두번째 조건의 뜻을 나름대로 이해한 것은 원본 사다리 데이터를 건들이지 말고,  
+복사본에다가 작성하라는 것으로 이해를 하고 문제를 풀었다.
 
-    // 질문 던지기
-    rl.question('이름이 무엇인가요? ', (answer) => {
-    // 답변 출력
-    console.log(`안녕하세요, ${answer}!`);
+잘 작성하고 있는 줄 알고 마지막으로 출력을 해보는데 이상하게 사다리가 아예 출력이 안되었다.
 
-    // 인터페이스 닫기
-    rl.close();
-    });
-
-위의 코드를 이용해서 일단 입력이 항상 "200001", 1 이라는 형식으로 들어온다고 가정하고 문제를 풀었다.  
-아래와 같이 형식을 바꿔줬다.
-
-    rl.question('형식은 "200001",8 과 같이 날짜와 인원수 : ', (answer) => {
-    // 답변 출력
-    const param0=answer.substring(1,7);
-    const param1=answer[10];
-
-    console.log(`${find(param0,param1)}`);
-
-    // 인터페이스 닫기
-    rl.close();
-
-이렇게 바꾼 뒤에 find함수를 작성하였다.  
-find함수는 문자열을 리턴한다고 했으므로, ans라는 문자열에 덕지덕지 붙이는 방법을 채택했다.
-
-    function find(param0,param1){
-        var index=[];
-        param0=parseInt(param0);
-        param1=parseInt(param1);
-        for(var i=0;i<10;i++){
-            if(games[i].start<=param0  && games[i].end>=param0 && games[i].ptcp>=param1) index.push(games[i]);
-        }
-        index.sort((a,b)=>b.star-a.star);
-        var ans="";
-        for(var i=0;i<index.length;i++){
-            ans+=index[i].name;
-            if(index[i].end!==202407){
-                ans+="*"
-            }
-            ans+="("+index[i].genre+") ";
-            ans+=index[i].star;
-            if(i!==index.length-1){
-                ans+=", ";
+    function randomFill(){
+    for(var i=0;i<5;i++){
+        for(var j=0;j<4;j++){
+            var plus=option[Math.floor(Math.random()*10)%4];
+            //var first=ans.substring(4*j+18*i,4*j+18*i+1); 아....
+            var first=ans.substring(0,4*j+18*i+1);
+            var second=ans.substring(4*j+18*i+4);
+            //console.log(plus);
+            ans=first+plus+second;
+            //console.log(ans);
             }
         }
-        return ans;
     }
 
-위와 같이 작성하고 실행했더니, 결국 잘 작동했다.
+문제는 아... 라고 적은 저 부분이었다.  
+늘 앞문장은 인덱스0부터 시작해야하는데 4*j+18*i 라는 인덱스에 꽂혀서 1시간동안 문제를 찾지 못하였다.  
+결국 디버깅해보면서 문제를 찾았고, 저 인덱스는 analyze함수 구현에서 요긴하게 사용하였다.
+
+문제를 풀고나서 몇 번 확인을 해보니 압도적으로 false가 많이 출력된다.
+
+    |/-/|   |---|\-\|
+    |/-/|---|\-\|---|
+    |\-\|\-\|   |---|
+    |   |\-\|---|\-\|
+    |\-\|---|/-/|/-/|
+
+    true
+
+이렇게 이쁜 사다리가 한번 완성되기까지 8번의 false가 나타났다.  
+아마 확률적으로도 true가 훨씬 작게나오는게 맞긴 할 것으로 예측이 된다.
