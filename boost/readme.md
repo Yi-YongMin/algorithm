@@ -1,31 +1,64 @@
-# 부스트마블
+# 실수축제
 
-## 길이 16짜리 0으로 채워진 배열을 선언한다.
+## 자바스크립트의 터미널 입출력
 
-그리고 그 배열을 순회하면서 모두 1로 채워지거나 param0에  
- 남은 것이 없으면 종료한다.
+js를 터미널에서 입출력하기 위해서는 node 3.js 라는 명령어를 터미널에 작성해야 한다는 사실을 알았다.  
+게다가 입출력을 받기 위한 코드도 엄청 길다.
 
-## 나타난 문제점
+    const readline = require('readline');
 
-    c:\algoTest\algorithm\boost\2.js:8
-        while(cnt!==15 && par.length())
+    // readline 인터페이스 생성
+    const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+    });
 
-확인해보니 자바스크립트에서는 length가 함수가 아니라 속성이라서 위와같이 사용하면 안되고
+    // 질문 던지기
+    rl.question('이름이 무엇인가요? ', (answer) => {
+    // 답변 출력
+    console.log(`안녕하세요, ${answer}!`);
 
-    par.length
+    // 인터페이스 닫기
+    rl.close();
+    });
 
-라고 사용해야한단다.  
-또한 다른 문제점이 나타났는데,
+위의 코드를 이용해서 일단 입력이 항상 "200001", 1 이라는 형식으로 들어온다고 가정하고 문제를 풀었다.  
+아래와 같이 형식을 바꿔줬다.
 
-    Map(4) { 'A' => 6, 'B' => 5, 'C' => 2, 'D' => 2 }
+    rl.question('형식은 "200001",8 과 같이 날짜와 인원수 : ', (answer) => {
+    // 답변 출력
+    const param0=answer.substring(1,7);
+    const param1=answer[10];
 
-난 이런식으로 출력되기를 원한 것이 아닌데, console.log(play(param0)); 를 했더니 위와같이 출력되었다.  
-내 방식은 맵으로 출력해서 그런 것이고 맵에서 일반객체로 바꾸어야 한단다.
+    console.log(`${find(param0,param1)}`);
 
-    Object.fromEntries(map);
+    // 인터페이스 닫기
+    rl.close();
 
-위 와 같이 맵을 일반객체로 바꾸면 아래와 같이 출력이 된다.
+이렇게 바꾼 뒤에 find함수를 작성하였다.  
+find함수는 문자열을 리턴한다고 했으므로, ans라는 문자열에 덕지덕지 붙이는 방법을 채택했다.
 
-    { A: 7, B: 5, C: 3, D: 0 }
+    function find(param0,param1){
+        var index=[];
+        param0=parseInt(param0);
+        param1=parseInt(param1);
+        for(var i=0;i<10;i++){
+            if(games[i].start<=param0  && games[i].end>=param0 && games[i].ptcp>=param1) index.push(games[i]);
+        }
+        index.sort((a,b)=>b.star-a.star);
+        var ans="";
+        for(var i=0;i<index.length;i++){
+            ans+=index[i].name;
+            if(index[i].end!==202407){
+                ans+="*"
+            }
+            ans+="("+index[i].genre+") ";
+            ans+=index[i].star;
+            if(i!==index.length-1){
+                ans+=", ";
+            }
+        }
+        return ans;
+    }
 
-위와 같은 출력도 형식이 조금 다르다. 하지만 같은 뜻으로 출력이 되었다고 판단되므로 마치겠다.
+위와 같이 작성하고 실행했더니, 결국 잘 작동했다.
