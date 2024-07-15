@@ -1,0 +1,6 @@
+a, b = map(int, input().split())
+A = set(input().split())
+# print(A)
+B = set(input().split())
+# print(B)
+print(len(A ^ B))
